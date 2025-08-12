@@ -125,3 +125,58 @@ def test_transfer_insufficient_funds():
     )
     assert transfer_response.status_code == 400
     assert "Insufficient funds" in transfer_response.json()["detail"]
+
+
+def test_create_account_with_default_deposit():
+    response = client.post("/accounts/", json={"account_holder": "Mallory"})
+    assert response.status_code == 201
+    data = response.json()
+    assert data["account_holder"] == "Mallory"
+    assert data["balance"] == 0.0
+
+def test_withdraw_zero_or_negative_amount():
+    create_response = client.post("/accounts/", json={"account_holder": "Nancy", "initial_deposit": 100.0})
+    account_number = create_response.json()["account_number"]
+
+    response_zero = client.post(f"/accounts/{account_number}/withdraw", json={"amount": 0.0})
+    assert response_zero.status_code == 400
+    assert "Withdrawal amount must be positive" in response_zero.json()["detail"]
+
+    response_negative = client.post(f"/accounts/{account_number}/withdraw", json={"amount": -50.0})
+    assert response_negative.status_code == 400
+    assert "Withdrawal amount must be positive" in response_negative.json()["detail"]
+
+def test_transfer_to_same_account():
+    res = client.post("/accounts/", json={"account_holder": "Olivia", "initial_deposit": 100.0})
+    acc_num = res.json()["account_number"]
+    
+    response = client.post(
+        "/transfer/",
+        json={"from_account_number": acc_num, "to_account_number": acc_num, "amount": 50.0}
+    )
+    assert response.status_code == 400
+    assert "Cannot transfer funds to the same account" in response.json()["detail"]
+
+def test_transfer_from_non_existent_account():
+    res = client.post("/accounts/", json={"account_holder": "Peggy", "initial_deposit": 100.0})
+    receiver_num = res.json()["account_number"]
+
+    response = client.post(
+        "/transfer/",
+        json={"from_account_number": "9999999999", "to_account_number": receiver_num, "amount": 50.0}
+    )
+    assert response.status_code == 404
+    assert "Sender account not found" in response.json()["detail"]
+
+def test_transfer_negative_amount():
+    sender_res = client.post("/accounts/", json={"account_holder": "Quentin", "initial_deposit": 100.0})
+    receiver_res = client.post("/accounts/", json={"account_holder": "Rose", "initial_deposit": 100.0})
+    sender_num = sender_res.json()["account_number"]
+    receiver_num = receiver_res.json()["account_number"]
+
+    response = client.post(
+        "/transfer/",
+        json={"from_account_number": sender_num, "to_account_number": receiver_num, "amount": -50.0}
+    )
+    assert response.status_code == 400
+    assert "Transfer amount must be positive" in response.json()["detail"]
