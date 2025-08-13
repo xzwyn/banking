@@ -38,30 +38,30 @@ def setup_and_teardown_database():
 def test_create_account_successfully():
     response = client.post(
         "/accounts/",
-        json={"account_holder": "Alice", "initial_deposit": 100.0}
+        json={"account_holder": "Aswin", "initial_deposit": 100.0}
     )
     assert response.status_code == 201
     data = response.json()
-    assert data["account_holder"] == "Alice"
+    assert data["account_holder"] == "Aswin"
     assert data["balance"] == 100.0
     assert "account_number" in data
 
 def test_create_account_negative_deposit():
     response = client.post(
         "/accounts/",
-        json={"account_holder": "Bob", "initial_deposit": -50.0}
+        json={"account_holder": "Sreerag", "initial_deposit": -50.0}
     )
     assert response.status_code == 400
     assert "Initial deposit cannot be negative" in response.json()["detail"]
 
 def test_check_balance():
-    create_response = client.post("/accounts/", json={"account_holder": "Charlie", "initial_deposit": 500.0})
+    create_response = client.post("/accounts/", json={"account_holder": "Ashwin", "initial_deposit": 500.0})
     account_number = create_response.json()["account_number"]
 
     balance_response = client.get(f"/accounts/{account_number}/balance")
     assert balance_response.status_code == 200
     data = balance_response.json()
-    assert data["account_holder"] == "Charlie"
+    assert data["account_holder"] == "Ashwin"
     assert data["balance"] == 500.0
 
 def test_check_balance_not_found():
@@ -79,7 +79,7 @@ def test_deposit_successfully():
     assert data["balance"] == 350.0
 
 def test_withdraw_successfully():
-    create_response = client.post("/accounts/", json={"account_holder": "Eve", "initial_deposit": 1000.0})
+    create_response = client.post("/accounts/", json={"account_holder": "Dev", "initial_deposit": 1000.0})
     account_number = create_response.json()["account_number"]
 
     withdraw_response = client.post(f"/accounts/{account_number}/withdraw", json={"amount": 300.0})
@@ -87,7 +87,7 @@ def test_withdraw_successfully():
     assert withdraw_response.json()["balance"] == 700.0
 
 def test_withdraw_insufficient_funds():
-    create_response = client.post("/accounts/", json={"account_holder": "Frank", "initial_deposit": 100.0})
+    create_response = client.post("/accounts/", json={"account_holder": "Deven", "initial_deposit": 100.0})
     account_number = create_response.json()["account_number"]
 
     withdraw_response = client.post(f"/accounts/{account_number}/withdraw", json={"amount": 200.0})
@@ -95,8 +95,8 @@ def test_withdraw_insufficient_funds():
     assert "Insufficient funds" in withdraw_response.json()["detail"]
 
 def test_transfer_successfully():
-    sender_res = client.post("/accounts/", json={"account_holder": "Grace", "initial_deposit": 1000.0})
-    receiver_res = client.post("/accounts/", json={"account_holder": "Heidi", "initial_deposit": 500.0})
+    sender_res = client.post("/accounts/", json={"account_holder": "Joel", "initial_deposit": 1000.0})
+    receiver_res = client.post("/accounts/", json={"account_holder": "Wilson", "initial_deposit": 500.0})
     sender_num = sender_res.json()["account_number"]
     receiver_num = receiver_res.json()["account_number"]
 
@@ -114,8 +114,8 @@ def test_transfer_successfully():
     assert receiver_balance_res.json()["balance"] == 700.0
 
 def test_transfer_insufficient_funds():
-    sender_res = client.post("/accounts/", json={"account_holder": "Ivan", "initial_deposit": 100.0})
-    receiver_res = client.post("/accounts/", json={"account_holder": "Judy", "initial_deposit": 500.0})
+    sender_res = client.post("/accounts/", json={"account_holder": "Sid", "initial_deposit": 100.0})
+    receiver_res = client.post("/accounts/", json={"account_holder": "Zayn", "initial_deposit": 500.0})
     sender_num = sender_res.json()["account_number"]
     receiver_num = receiver_res.json()["account_number"]
 
@@ -128,14 +128,14 @@ def test_transfer_insufficient_funds():
 
 
 def test_create_account_with_default_deposit():
-    response = client.post("/accounts/", json={"account_holder": "Mallory"})
+    response = client.post("/accounts/", json={"account_holder": "Felix"})
     assert response.status_code == 201
     data = response.json()
-    assert data["account_holder"] == "Mallory"
+    assert data["account_holder"] == "Felix"
     assert data["balance"] == 0.0
 
 def test_withdraw_zero_or_negative_amount():
-    create_response = client.post("/accounts/", json={"account_holder": "Nancy", "initial_deposit": 100.0})
+    create_response = client.post("/accounts/", json={"account_holder": "Anargha", "initial_deposit": 100.0})
     account_number = create_response.json()["account_number"]
 
     response_zero = client.post(f"/accounts/{account_number}/withdraw", json={"amount": 0.0})
@@ -147,7 +147,7 @@ def test_withdraw_zero_or_negative_amount():
     assert "Withdrawal amount must be positive" in response_negative.json()["detail"]
 
 def test_transfer_to_same_account():
-    res = client.post("/accounts/", json={"account_holder": "Olivia", "initial_deposit": 100.0})
+    res = client.post("/accounts/", json={"account_holder": "Gaadha", "initial_deposit": 100.0})
     acc_num = res.json()["account_number"]
     
     response = client.post(
@@ -158,7 +158,7 @@ def test_transfer_to_same_account():
     assert "Cannot transfer funds to the same account" in response.json()["detail"]
 
 def test_transfer_from_non_existent_account():
-    res = client.post("/accounts/", json={"account_holder": "Peggy", "initial_deposit": 100.0})
+    res = client.post("/accounts/", json={"account_holder": "Hercules", "initial_deposit": 100.0})
     receiver_num = res.json()["account_number"]
 
     response = client.post(
@@ -169,8 +169,8 @@ def test_transfer_from_non_existent_account():
     assert "Sender account not found" in response.json()["detail"]
 
 def test_transfer_negative_amount():
-    sender_res = client.post("/accounts/", json={"account_holder": "Quentin", "initial_deposit": 100.0})
-    receiver_res = client.post("/accounts/", json={"account_holder": "Rose", "initial_deposit": 100.0})
+    sender_res = client.post("/accounts/", json={"account_holder": "Ravi", "initial_deposit": 100.0})
+    receiver_res = client.post("/accounts/", json={"account_holder": "Raushan", "initial_deposit": 100.0})
     sender_num = sender_res.json()["account_number"]
     receiver_num = receiver_res.json()["account_number"]
 
